@@ -30,4 +30,11 @@ package org.jruby.util.io;
 
 public class BadDescriptorException extends Exception {
 
+    public BadDescriptorException() {
+        super();
+    }
+    
+    public BadDescriptorException(String message) {
+        super(message);
+    }
 }
