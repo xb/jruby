@@ -282,7 +282,7 @@ public class ChannelDescriptor {
      */
     public void checkOpen() throws BadDescriptorException {
         if (!isOpen()) {
-            throw new BadDescriptorException();
+            throw new BadDescriptorException("channel is not open.");
         }
     }
     
@@ -462,7 +462,7 @@ public class ChannelDescriptor {
 
         // TODO: It would be nice to throw a better error for this
         if (!(channel instanceof ReadableByteChannel)) {
-            throw new BadDescriptorException();
+            throw new BadDescriptorException("channel "+channel+" is not of type ReadableByteChannel.");
         }
         ReadableByteChannel readChannel = (ReadableByteChannel) channel;
         int bytesRead = 0;
@@ -485,7 +485,7 @@ public class ChannelDescriptor {
 
         // TODO: It would be nice to throw a better error for this
         if (!(channel instanceof WritableByteChannel)) {
-            throw new BadDescriptorException();
+            throw new BadDescriptorException("channel "+channel+" is not of type WritableByteChannel.");
         }
         
         WritableByteChannel writeChannel = (WritableByteChannel)channel;
@@ -692,12 +692,12 @@ public class ChannelDescriptor {
         synchronized (refCounter) {
             // if refcount is at or below zero, we're no longer valid
             if (refCounter.get() <= 0) {
-                throw new BadDescriptorException();
+                throw new BadDescriptorException("refCounter.get()="+refCounter.get()+".");
             }
 
             // if channel is already closed, we're no longer valid
             if (!channel.isOpen()) {
-                throw new BadDescriptorException();
+                throw new BadDescriptorException("cannot close, because channel.isOpen()="+channel.isOpen()+".");
             }
 
             // otherwise decrement and possibly close as normal
