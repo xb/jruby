@@ -778,7 +778,12 @@ public class ChannelStream implements Stream, Finalizable {
         } else {
             if (buf.length() > buffer.remaining()) flushWrite();
             
-            buffer.put(buf.unsafeBytes(), buf.begin(), buf.length());
+            try {
+                buffer.put(buf.unsafeBytes(), buf.begin(), buf.length());
+            } catch (java.nio.BufferOverflowException e) {
+                System.err.print("caught while buffer="+buffer+", buf="+buf+" (clearing buffer afterwards):");
+                buffer.clear();  
+            }
         }
         
         if (isSync()) flushWrite();
