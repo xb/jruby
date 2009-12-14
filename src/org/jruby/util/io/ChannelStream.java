@@ -1007,12 +1007,17 @@ public class ChannelStream implements Stream, Finalizable {
                 // TODO: check the return value here
             }
         } else {
+						int writeLength = buf.length();
+						int oldBufferRemaining = buffer.remaining();
             if (buf.length() > buffer.remaining()) flushWrite();
             
+						int newBufferRemaining = buffer.remaining();
+						
             try {
                 buffer.put(buf.unsafeBytes(), buf.begin(), buf.length());
             } catch (java.nio.BufferOverflowException e) {
-                System.err.print("caught while buffer="+buffer+", buf="+buf+" (clearing buffer afterwards):");
+                System.err.print("caught while buffer="+buffer+", buf=\""+buf+"\", buf.begin()="+buf.begin()+",buf.length()="+buf.length()+", writeLength="+writeLength+", oldBufferRemaining="+oldBufferRemaining+", newBufferRemaining="+newBufferRemaining+" (clearing buffer afterwards):");
+								e.printStackTrace();
                 buffer.clear();  
             }
         }
