@@ -153,7 +153,7 @@ public class ChannelStream implements Stream, Finalizable {
     }
     
     public ModeFlags getModes() {
-    	return modes;
+        return modes;
     }
     
     public boolean isSync() {
@@ -579,16 +579,20 @@ public class ChannelStream implements Stream, Finalizable {
      * @throws IOException
      */
     private void flushWrite() throws IOException, BadDescriptorException {
-        if (reading || !modes.isWritable() || buffer.position() == 0) return; // Don't bother
+        if (reading || !modes.isWritable()) return; // Don't bother
         
-        int len = buffer.position();
-        buffer.flip();
-        int n = descriptor.write(buffer);
-
-        if(n != len) {
-            // TODO: check the return value here
+        try {
+        
+            int len = buffer.position();
+            buffer.flip();
+            int n = descriptor.write(buffer);
+    
+            if(n != len) {
+                // TODO: check the return value here
+            }
+        } finally { // even in case of exceptions (e.g. during descriptor.write()), we always maintain the contract that after a buffer.flip(), there will be a buffer.clear() in write mode
+            buffer.clear();
         }
-        buffer.clear();
     }
     
     /**
@@ -596,35 +600,39 @@ public class ChannelStream implements Stream, Finalizable {
      * @throws IOException
      */
     private boolean flushWrite(final boolean block) throws IOException, BadDescriptorException {
-        if (reading || !modes.isWritable() || buffer.position() == 0) return false; // Don't bother
-        int len = buffer.position();
-        int nWritten = 0;
-        buffer.flip();
-
-        // For Sockets, only write as much as will fit.
-        if (descriptor.getChannel() instanceof SelectableChannel) {
-            SelectableChannel selectableChannel = (SelectableChannel)descriptor.getChannel();
-            synchronized (selectableChannel.blockingLock()) {
-                boolean oldBlocking = selectableChannel.isBlocking();
-                try {
-                    if (oldBlocking != block) {
-                        selectableChannel.configureBlocking(block);
-                    }
-                    nWritten = descriptor.write(buffer);
-                } finally {
-                    if (oldBlocking != block) {
-                        selectableChannel.configureBlocking(oldBlocking);
+        if (reading || !modes.isWritable()) return false; // Don't bother
+        
+        try {
+            int len = buffer.position();
+            int nWritten = 0;
+            buffer.flip();
+    
+            // For Sockets, only write as much as will fit.
+            if (descriptor.getChannel() instanceof SelectableChannel) {
+                SelectableChannel selectableChannel = (SelectableChannel)descriptor.getChannel();
+                synchronized (selectableChannel.blockingLock()) {
+                    boolean oldBlocking = selectableChannel.isBlocking();
+                    try {
+                        if (oldBlocking != block) {
+                            selectableChannel.configureBlocking(block);
+                        }
+                        nWritten = descriptor.write(buffer);
+                    } finally {
+                        if (oldBlocking != block) {
+                            selectableChannel.configureBlocking(oldBlocking);
+                        }
                     }
                 }
+            } else {
+                nWritten = descriptor.write(buffer);
             }
-        } else {
-            nWritten = descriptor.write(buffer);
+            if (nWritten != len) {
+                buffer.compact();
+                return false;
+            }
+        } finally { // even in case of exceptions (e.g. during descriptor.write()), we always maintain the contract that after a buffer.flip(), there will be a buffer.clear() in write mode
+            buffer.clear();
         }
-        if (nWritten != len) {
-            buffer.compact();
-            return false;
-        }
-        buffer.clear();
         return true;
     }
 
@@ -1007,17 +1015,17 @@ public class ChannelStream implements Stream, Finalizable {
                 // TODO: check the return value here
             }
         } else {
-						int writeLength = buf.length();
-						int oldBufferRemaining = buffer.remaining();
+            int writeLength = buf.length();
+            int oldBufferRemaining = buffer.remaining();
             if (buf.length() > buffer.remaining()) flushWrite();
             
-						int newBufferRemaining = buffer.remaining();
-						
+            int newBufferRemaining = buffer.remaining();
+            
             try {
                 buffer.put(buf.unsafeBytes(), buf.begin(), buf.length());
             } catch (java.nio.BufferOverflowException e) {
                 System.err.print("caught while buffer="+buffer+", buf=\""+buf+"\", buf.begin()="+buf.begin()+",buf.length()="+buf.length()+", writeLength="+writeLength+", oldBufferRemaining="+oldBufferRemaining+", newBufferRemaining="+newBufferRemaining+" (clearing buffer afterwards):");
-								e.printStackTrace();
+                e.printStackTrace();
                 buffer.clear();  
             }
         }
