@@ -11,7 +11,7 @@
  * implied. See the License for the specific language governing
  * rights and limitations under the License.
  *
- * Copyright (C) 2009 Wayne Meissner
+ * Copyright (C) 2012 Hiro Asari
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either of the GNU General Public License Version 2 or later (the "GPL"),
@@ -26,42 +26,34 @@
  * the terms of any one of the CPL, the GPL or the LGPL.
  ***** END LICENSE BLOCK *****/
 
-
-package org.jruby.cext;
+package org.jruby.ext.socket;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
-import org.jruby.RubyObject;
+import org.jruby.anno.JRubyClass;
+import org.jruby.cext.RubyData;
+import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.builtin.IRubyObject;
 
-@SuppressWarnings("serial")
-public class RubyData extends RubyObject {
-
-    public RubyData(Ruby runtime, RubyClass klass) {
-        super(runtime, klass);
+/**
+ *
+ * @author asari
+ */
+@JRubyClass(name = "Addrinfo", parent = "Data")
+public class RubyAddrinfo extends RubyData {
+    static void createAddrinfo(Ruby runtime) {
+        RubyClass rb_cAddrinfo = runtime.defineClass("Addrinfo", runtime.getClass("Data"), ADDRINFO_ALLOCATOR);
+        
     }
+    
+    private static ObjectAllocator ADDRINFO_ALLOCATOR = new ObjectAllocator() {
 
-    public static RubyData newRubyData(Ruby runtime, RubyClass klass, long handle) {
-
-        RubyData d = new RubyData(runtime, klass);
-        GC.register(d, Handle.newHandle(runtime, d, handle));
-        Cleaner.register(new DataCleaner(d, handle));
-
-        return d;
-    }
-
-    final static class DataCleaner extends Cleaner {
-        private final long address;
-
-        public DataCleaner(RubyData obj, long address) {
-            super(obj);
-            this.address = address;
+        public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
+            return new RubyAddrinfo(runtime, klazz);
         }
+    };
 
-
-        @Override
-        void dispose() {
-            Native.freeHandle(address);
-        }
-
+    public RubyAddrinfo(Ruby runtime, RubyClass klazz) {
+        super(runtime, klazz);
     }
 }
