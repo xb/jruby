@@ -28,11 +28,14 @@
 
 package org.jruby.ext.socket;
 
+import org.jruby.CompatVersion;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.anno.JRubyClass;
+import org.jruby.anno.JRubyMethod;
 import org.jruby.cext.RubyData;
 import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
@@ -43,7 +46,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class RubyAddrinfo extends RubyData {
     static void createAddrinfo(Ruby runtime) {
         RubyClass rb_cAddrinfo = runtime.defineClass("Addrinfo", runtime.getClass("Data"), ADDRINFO_ALLOCATOR);
-        
+        rb_cAddrinfo.defineAnnotatedMethods(RubyAddrinfo.class);
     }
     
     private static ObjectAllocator ADDRINFO_ALLOCATOR = new ObjectAllocator() {
@@ -55,5 +58,17 @@ public class RubyAddrinfo extends RubyData {
 
     public RubyAddrinfo(Ruby runtime, RubyClass klazz) {
         super(runtime, klazz);
+    }
+    
+    @JRubyMethod(name = "initialize", required = 1, optional = 3, compat = CompatVersion.RUBY1_9)
+    public IRubyObject initialize(ThreadContext context, IRubyObject[] args) {
+                
+        checkAddrinfo();
+        throw context.getRuntime().newNotImplementedError("Not yet implemented");
+    }
+    
+    private void checkAddrinfo() {
+        // TODO: implement this
+        // throw getRuntime().newTypeError("already initialized socket address");
     }
 }
