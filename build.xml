@@ -103,6 +103,33 @@
   
   <property name="version.ruby" value="${version.ruby.major}.${version.ruby.minor}"/>
 
+  <!-- dependency mgmt -->
+  <property name="build.lib.dir" value="${basedir}${file.separator}build_lib" />
+  <property name="maven.ant.tasks.jar" value="${build.lib.dir}${file.separator}maven-ant-tasks-2.1.3.jar"/>
+  <property name="maven.ant.tasks.bootstrap.location" value="http://www.apache.org/dist/maven/binaries/maven-ant-tasks-2.1.3.jar"/>
+  <available property="maven.ant.tasks.jar.exists" file="${maven.ant.tasks.jar}"/>
+
+  <property name="package.name" value="${ant.project.name}.jar"/>
+  <property name="package.location" value="${build.dir}${file.separator}${package.name}"/>
+
+
+  <!-- This will download the "latest version" of the maven-ant-tasks if needed -->
+  <target name="bootstrap.maven.tasks" unless="maven.ant.tasks.jar.exists">
+      <mkdir dir="${build.lib.dir}"/>
+      <get src="${maven.ant.tasks.bootstrap.location}" dest="${maven.ant.tasks.jar}"/>
+  </target>
+
+  <!-- This will initialize all the maven ant tasks -->
+  <target name="init.maven.tasks" depends="bootstrap.maven.tasks">
+      <path
+              id="maven.ant.tasks.classpath"
+              path="${maven.ant.tasks.jar}" />
+      <typedef
+              resource="org/apache/maven/artifact/ant/antlib.xml"
+              uri="urn:maven-artifact-ant"
+              classpathref="maven.ant.tasks.classpath" />
+  </target>
+
   <!-- Initializes the build -->
   <target name="init" unless="init.hasrun">
     <!-- do not unpack native libs if they're already there -->
