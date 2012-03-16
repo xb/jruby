@@ -40,6 +40,7 @@ import static org.objectweb.asm.Opcodes.ACC_SUPER;
 import static org.objectweb.asm.Opcodes.ACC_VARARGS;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -1882,6 +1883,15 @@ public class RubyClass extends RubyModule {
         }
     }
 
+    public MetaClass getCachedSingletonClass() {
+         MetaClass cached = cachedSingletonClass;
+        if (cached == null || cached.generation != generation) {
+            cached = cachedSingletonClass = new MetaClass(getClassRuntime(), this, null);
+            cached.invalidateLike(this);
+        }
+        return cached;
+    }
+
     protected final Ruby runtime;
     private ObjectAllocator allocator; // the default allocator
     protected ObjectMarshal marshal;
@@ -1927,4 +1937,6 @@ public class RubyClass extends RubyModule {
 
     /** The "real" class, used by includes and singletons to locate the actual type of the object */
     private final RubyClass realClass;
+
+    private MetaClass cachedSingletonClass;
 }
