@@ -5,6 +5,7 @@ before_script:
 script: "PATH=`pwd`/bin:$PATH echo stroopwafels"
 install: /bin/true
 notifications:
-  irc: "irc.freenode.org#jruby"
+  irc:
+    channel: "irc.freenode.org#jruby"
     use_notice: true
     skip_join: true
