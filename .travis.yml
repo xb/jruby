@@ -7,5 +7,4 @@ install: /bin/true
 notifications:
   irc:
     channel: "irc.freenode.org#jruby"
-    use_notice: true
     skip_join: true
