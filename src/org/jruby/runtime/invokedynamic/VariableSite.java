@@ -9,7 +9,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.MutableCallSite;
 
-public class VariableSite extends MutableCallSite {
+public class VariableSite extends MutableCallSite implements SourceInfo {
     public final String name;
     private RubyClass.VariableAccessor accessor = RubyClass.VariableAccessor.DUMMY_ACCESSOR;
     private final String file;
@@ -65,5 +65,9 @@ public class VariableSite extends MutableCallSite {
 
     public int line() {
         return line;
+    }
+
+    public String sourceInfo() {
+        return " (" + file() + ":" + line() + ")";
     }
 }

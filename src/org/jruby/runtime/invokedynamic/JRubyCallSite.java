@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.jruby.runtime.CallType;
 import org.jruby.runtime.callsite.CacheEntry;
 
-public class JRubyCallSite extends MutableCallSite {
+public class JRubyCallSite extends MutableCallSite implements SourceInfo {
     private final Lookup lookup;
     private final CallType callType;
     public CacheEntry entry = CacheEntry.NULL_CACHE;
@@ -140,5 +140,9 @@ public class JRubyCallSite extends MutableCallSite {
 
     public void setInitialTarget(MethodHandle target) {
         super.setTarget(target);
+    }
+
+    public String sourceInfo() {
+        return " (" + file() + ":" + line() + ")";
     }
 }
