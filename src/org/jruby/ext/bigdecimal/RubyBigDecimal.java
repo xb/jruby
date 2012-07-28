@@ -440,7 +440,7 @@ public class RubyBigDecimal extends RubyNumeric {
         if (args.length == 0) { 
             decimal = new BigDecimal(0);
         } else {
-            String strValue = args[0].convertToString().toString();
+            String strValue = args[0].convertToFloat().asString().toString();
             strValue = strValue.trim();
             if ("NaN".equals(strValue)) {
                 return newNaN(runtime);
