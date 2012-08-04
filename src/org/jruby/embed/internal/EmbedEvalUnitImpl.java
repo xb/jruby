@@ -108,6 +108,17 @@ public class EmbedEvalUnitImpl implements EmbedEvalUnit {
             if (sharing_variables) {
                 vars.inject(scope, 0, null);
                 runtime.getCurrentContext().pushScope(scope);
+
+                // Simulate a constrained memory situation to collect soft references
+                try {
+                    java.util.List<byte[]> l = new java.util.ArrayList<byte[]>();
+                    while(true) {
+                        l.add(new byte[1024 * 1024]);
+                    }
+                } catch (OutOfMemoryError oome) {
+                    System.out.println("Forced SoftReference collection: " + oome);
+                }
+
             }
             IRubyObject ret;
             CompileMode mode = runtime.getInstanceConfig().getCompileMode();

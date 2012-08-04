@@ -276,9 +276,11 @@ public final class ThreadContext {
         if (index + 1 == stack.length) {
             expandScopesIfNecessary();
         }
+        System.out.println("ThreadContext.pushScope: " + Thread.currentThread() + ", " + this + ", scopeIndex: " + scopeIndex + ", scope: " + scope.hashCode());
     }
     
     public void popScope() {
+        System.out.println("ThreadContext.popScope: " + Thread.currentThread() + ", " + this + ", scopeIndex: " + scopeIndex + ", scope: " + scopeStack[scopeIndex].hashCode());
         scopeStack[scopeIndex--] = null;
     }
     
