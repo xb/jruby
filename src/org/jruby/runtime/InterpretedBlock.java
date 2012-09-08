@@ -314,6 +314,12 @@ public class InterpretedBlock extends ContextAwareBlockBody {
     }
 
     @Override
+    public IRubyObject yield19(ThreadContext context, IRubyObject[] args, IRubyObject self,
+                             RubyModule klass, Binding binding, Block.Type type, Block block) {
+        throw context.runtime.newRuntimeError("BUG: yield19 called on 1.8 mode " + getClass().getName());
+    }
+
+    @Override
     public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self,
             RubyModule klass, boolean alreadyArray, Binding binding, Block.Type type, Block block) {
         if (klass == null) {

@@ -107,6 +107,21 @@ public class CallBlock19 extends BlockBody {
         
         return callback.call(context, new IRubyObject[] {value}, Block.NULL_BLOCK);
     }
+
+    /**
+     * Yield to this block, usually passed to the current call.
+     *
+     * @param context represents the current thread-specific data
+     * @param args The value to yield, either a single value or an array of values
+     * @param self The current self
+     * @param klass
+     * @return
+     */
+    @Override
+    public IRubyObject yield19(ThreadContext context, IRubyObject[] args, IRubyObject self,
+                             RubyModule klass, Binding binding, Block.Type type, Block block) {
+        return callback.call(context, args, Block.NULL_BLOCK);
+    }
     
     public StaticScope getStaticScope() {
         throw new RuntimeException("CallBlock does not have a static scope; this should not be called");

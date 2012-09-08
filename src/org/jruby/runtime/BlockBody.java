@@ -78,6 +78,9 @@ public abstract class BlockBody {
     public abstract IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self,
             RubyModule klass, boolean aValue, Binding binding, Block.Type type);
 
+    public abstract IRubyObject yield19(ThreadContext context, IRubyObject[] value, IRubyObject self,
+                                      RubyModule klass, Binding binding, Block.Type type, Block block);
+
     // FIXME: This should replace blockless abstract versions of yield above and become abstract.
     // Here to allow incremental replacement. Overriden by subclasses which support it.
     public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self,

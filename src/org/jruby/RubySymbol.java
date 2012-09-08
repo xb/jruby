@@ -42,6 +42,7 @@ import org.jruby.runtime.Block.Type;
 import static org.jruby.util.StringSupport.codeLength;
 import static org.jruby.util.StringSupport.codePoint;
 
+import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.jcodings.Encoding;
@@ -426,6 +427,27 @@ public class RubySymbol extends RubyObject {
 
                 return site.call(context, self, self, array.toJavaArray());
             }
+
+            private IRubyObject yieldInner(ThreadContext context, IRubyObject[] args) {
+                if (args.length == 0) {
+                    throw context.runtime.newArgumentError("no receiver given");
+                }
+
+                IRubyObject self = args[0];
+
+                switch (args.length) {
+                    case 1:
+                        return site.call(context, self, self);
+                    case 2:
+                        return site.call(context, self, self, args[1]);
+                    case 3:
+                        return site.call(context, self, self, args[1], args[2]);
+                    case 4:
+                        return site.call(context, self, self, args[1], args[2], args[3]);
+                    default:
+                        return site.call(context, self, self, Arrays.copyOf(args, 1));
+                }
+            }
             
             @Override
             public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Type type) {
@@ -438,6 +460,11 @@ public class RubySymbol extends RubyObject {
                         (RubyArray) value : ArgsUtil.convertToRubyArray(context.runtime, value, false);
 
                 return yieldInner(context, array);
+            }
+
+            @Override
+            public IRubyObject yield19(ThreadContext context, IRubyObject[] args, IRubyObject self, RubyModule klass, Binding binding, Type type, Block block) {
+                return yieldInner(context, args);
             }
 
             @Override

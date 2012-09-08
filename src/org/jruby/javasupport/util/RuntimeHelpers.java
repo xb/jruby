@@ -1846,7 +1846,7 @@ public class RuntimeHelpers {
             return IRubyObject.NULL_ARRAY;
         }
         
-        return splatToArgumentsCommon(runtime, value);
+        return splatToArgumentsCommon19(runtime, value);
     }
     
     private static IRubyObject[] splatToArgumentsCommon(Ruby runtime, IRubyObject value) {
@@ -1859,6 +1859,24 @@ public class RuntimeHelpers {
 
         if (tmp.isNil()) {
             return convertSplatToJavaArray(runtime, value);
+        }
+        return ((RubyArray)tmp).toJavaArrayMaybeUnsafe();
+    }
+
+    private static IRubyObject[] splatToArgumentsCommon19(Ruby runtime, IRubyObject value) {
+
+        if (value.isNil()) {
+            return runtime.getSingleNilArray();
+        }
+
+        IRubyObject tmp = value.checkArrayType();
+
+        if (tmp.isNil()) {
+            return convertSplatToJavaArray(runtime, value);
+        }
+
+        if (((RubyArray)tmp).size() == 1) {
+            return new IRubyObject[] {tmp};
         }
         return ((RubyArray)tmp).toJavaArrayMaybeUnsafe();
     }
@@ -2717,6 +2735,19 @@ public class RuntimeHelpers {
         }
 
         return parameters;
+    }
+
+    // . Array given to rest should pass itself
+    // . Array with rest + other args should extract array
+    // . Array with multiple values and NO rest should extract args if there are more than one argument
+    // Note: In 1.9 alreadyArray is only relevent from our internal Java code in core libs.  We never use it
+    // from interpreter or JIT.  FIXME: Change core lib consumers to stop using alreadyArray param.
+    public static IRubyObject[] restructureBlockArgs19(IRubyObject[] args, boolean needsSplat) {
+        if (args.length == 1 && needsSplat) {
+            // one argument, needs splat, try to spread it
+            args = ((RubyArray)RuntimeHelpers.aryToAry(args[0])).toJavaArray();
+        }
+        return args;
     }
 
     public static boolean BEQ(ThreadContext context, IRubyObject value1, IRubyObject value2) {

@@ -60,6 +60,11 @@ public class NullBlockBody extends BlockBody {
     }
 
     @Override
+    public IRubyObject yield19(ThreadContext context, IRubyObject[] args, IRubyObject self, RubyModule klass, Binding binding, Type type, Block block) {
+        throw context.runtime.newLocalJumpError(RubyLocalJumpError.Reason.NOREASON, context.runtime.newArray(args), "yield called out of block");
+    }
+
+    @Override
     public StaticScope getStaticScope() {
         return null;
     }

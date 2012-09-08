@@ -542,21 +542,11 @@ public class ASTCompiler19 extends ASTCompiler {
 
         CompilerCallback argsCallback = new CompilerCallback() {
             public void call(BodyCompiler context) {
-                compile(yieldNode.getArgsNode(), context,true);
+                compile(yieldNode.getArgsNode(), context, true);
             }
         };
 
-        boolean unsplat = false;
-
-        switch (yieldNode.getArgsNode().getNodeType()) {
-            case ARGSPUSHNODE:
-            case ARGSCATNODE:
-            case SPLATNODE:
-                unsplat = true;
-                break;
-        }
-
-        context.getInvocationCompiler().yield19(argsCallback, unsplat);
+        context.getInvocationCompiler().yield19(argsCallback);
 
         // TODO: don't require pop
         if (!expr) context.consumeCurrentValue();

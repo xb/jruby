@@ -133,6 +133,12 @@ public abstract class MethodBlock extends ContextAwareBlockBody {
         return yield(context, value, self, klass, aValue, binding, type, Block.NULL_BLOCK);
     }
 
+    @Override
+    public IRubyObject yield19(ThreadContext context, IRubyObject[] args, IRubyObject self,
+                             RubyModule klass, Binding binding, Block.Type type, Block block) {
+        return yield(context, context.runtime.newArray(args), self, klass, false, binding, type, Block.NULL_BLOCK);
+    }
+
     /**
      * Yield to this block, usually passed to the current call.
      * 

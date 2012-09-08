@@ -104,6 +104,21 @@ public class CallBlock extends BlockBody {
             RubyModule klass, boolean aValue, Binding binding, Block.Type type) {
         return callback.call(context, new IRubyObject[] {value}, Block.NULL_BLOCK);
     }
+
+    /**
+     * Yield to this block, usually passed to the current call.
+     *
+     * @param context represents the current thread-specific data
+     * @param args The value to yield, either a single value or an array of values
+     * @param self The current self
+     * @param klass
+     * @return
+     */
+    @Override
+    public IRubyObject yield19(ThreadContext context, IRubyObject[] args, IRubyObject self,
+                             RubyModule klass, Binding binding, Block.Type type, Block block) {
+        throw context.runtime.newRuntimeError("BUG: yield19 called on 1.8 mode " + getClass().getName());
+    }
     
     public StaticScope getStaticScope() {
         return dummyScope;

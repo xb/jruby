@@ -27,6 +27,7 @@
 
 package org.jruby.compiler.impl;
 
+import org.jruby.RubyArray;
 import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
@@ -1004,23 +1005,21 @@ public class StandardInvocationCompiler implements InvocationCompiler {
         }
     }
 
-    public void yield19(CompilerCallback argsCallback, boolean unsplat) {
+    public void yield19(CompilerCallback argsCallback) {
         methodCompiler.loadBlock();
         methodCompiler.loadThreadContext();
 
         if (argsCallback != null) {
             argsCallback.call(methodCompiler);
+            method.checkcast(p(RubyArray.class));
+            method.invokevirtual(p(RubyArray.class), "toJavaArray", sig(IRubyObject[].class));
         } else {
             method.aconst_null();
         }
 
-        if (unsplat) {
-            methodCompiler.invokeUtilityMethod("unsplatValue19", sig(IRubyObject.class, IRubyObject.class));
-        }
-
         method.aconst_null();
         method.aconst_null();
-        method.invokevirtual(p(Block.class), "yieldArray", sig(IRubyObject.class, ThreadContext.class, IRubyObject.class, IRubyObject.class, RubyModule.class));
+        method.invokevirtual(p(Block.class), "yield19", sig(IRubyObject.class, ThreadContext.class, IRubyObject[].class, IRubyObject.class, RubyModule.class));
     }
 
     public void yieldSpecific(ArgumentsCallback argsCallback) {

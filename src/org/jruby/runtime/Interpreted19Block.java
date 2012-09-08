@@ -40,6 +40,9 @@ import org.jruby.exceptions.JumpException;
 import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.runtime.builtin.IRubyObject;
+
+import java.util.Arrays;
+
 /**
  *
  * @author enebo
@@ -178,8 +181,30 @@ public class Interpreted19Block  extends ContextAwareBlockBody {
     public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self,
             RubyModule klass, boolean aValue, Binding binding, Block.Type type) {
         return yield(context, value, self, klass, aValue, binding, type, Block.NULL_BLOCK);
-
     }
+
+    @Override
+    public IRubyObject yield19(ThreadContext context, IRubyObject[] args, IRubyObject self,
+                             RubyModule klass, Binding binding, Block.Type type, Block block) {
+        if (klass == null) {
+            self = prepareSelf(binding);
+        }
+
+        Visibility oldVis = binding.getFrame().getVisibility();
+        Frame lastFrame = pre(context, klass, binding);
+
+        try {
+            setupBlockArgs(context, args, self, block, type);
+
+            // This while loop is for restarting the block call in case a 'redo' fires.
+            return evalBlockBody(context, binding, self);
+        } catch (JumpException.NextJump nj) {
+            return handleNextJump(context, nj, type);
+        } finally {
+            post(context, binding, oldVis, lastFrame);
+        }
+    }
+
     @Override
     public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self,
             RubyModule klass, boolean aValue, Binding binding, Block.Type type, Block block) {
@@ -239,6 +264,18 @@ public class Interpreted19Block  extends ContextAwareBlockBody {
 
         Ruby runtime = context.runtime;
         if (type == Block.Type.LAMBDA) args.checkArgCount(runtime, parameters.length);        
+        if (!(args instanceof ArgsNoArgNode)) args.prepare(context, runtime, self, parameters, block);
+    }
+
+    /**
+     * @see RuntimeHelpers#restructureBlockArgs19(IRubyObject, boolean, boolean)
+     */
+    private void setupBlockArgs(ThreadContext context, IRubyObject[] value, IRubyObject self, Block block, Block.Type type) {
+        IRubyObject[] parameters = RuntimeHelpers.restructureBlockArgs19(value, needsSplat);
+
+        System.out.println("p: " + Arrays.toString(parameters));
+        Ruby runtime = context.runtime;
+        if (type == Block.Type.LAMBDA) args.checkArgCount(runtime, parameters.length);
         if (!(args instanceof ArgsNoArgNode)) args.prepare(context, runtime, self, parameters, block);
     }
 

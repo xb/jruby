@@ -168,6 +168,26 @@ public class CompiledBlock19 extends ContextAwareBlockBody {
             post(context, binding, oldVis, lastFrame);
         }
     }
+
+    @Override
+    public IRubyObject yield19(ThreadContext context, IRubyObject[] args, IRubyObject self, RubyModule klass, Binding binding, Block.Type type, Block block) {
+        if (klass == null) {
+            self = prepareSelf(binding);
+        }
+
+        Visibility oldVis = binding.getFrame().getVisibility();
+        Frame lastFrame = pre(context, klass, binding);
+
+        try {
+            IRubyObject[] realArgs = setupBlockArgs(args);
+            return callback.call(context, self, realArgs, block);
+        } catch (JumpException.NextJump nj) {
+            // A 'next' is like a local return from the block, ending this call or yield.
+            return handleNextJump(context, nj, type);
+        } finally {
+            post(context, binding, oldVis, lastFrame);
+        }
+    }
     
     private IRubyObject prepareSelf(Binding binding) {
         IRubyObject self = binding.getSelf();
@@ -186,6 +206,10 @@ public class CompiledBlock19 extends ContextAwareBlockBody {
 
     private IRubyObject[] setupBlockArgs(IRubyObject value, boolean alreadyArray) {
         return RuntimeHelpers.restructureBlockArgs19(value, needsSplat, alreadyArray);
+    }
+
+    private IRubyObject[] setupBlockArgs(IRubyObject[] value) {
+        return RuntimeHelpers.restructureBlockArgs19(value, needsSplat);
     }
 
     public String getFile() {

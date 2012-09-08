@@ -69,6 +69,11 @@ public class InterpretedIRBlockBody extends ContextAwareBlockBody {
         return commonYieldPath(context, args, self, klass, binding, type, Block.NULL_BLOCK);
     }
 
+    @Override
+    public IRubyObject yield19(ThreadContext context, IRubyObject[] args, IRubyObject self, RubyModule klass, Binding binding, Type type, Block block) {
+        throw context.runtime.newRuntimeError("BUG: yield19 called on 1.8 mode " + getClass().getName());
+    }
+
     protected IRubyObject prepareSelf(Binding binding) {
         IRubyObject self = binding.getSelf();
         binding.getFrame().setSelf(self);

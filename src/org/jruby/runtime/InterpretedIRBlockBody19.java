@@ -101,6 +101,11 @@ public class InterpretedIRBlockBody19 extends InterpretedIRBlockBody {
     }
 
     @Override
+    public IRubyObject yield19(ThreadContext context, IRubyObject[] args, IRubyObject self, RubyModule klass, Binding binding, Type type, Block block) {
+        return commonYieldPath(context, args, self, klass, binding, type, block);
+    }
+
+    @Override
     public IRubyObject[] prepareArgumentsForCall(ThreadContext context, IRubyObject[] args, Block.Type type) {
         if (type == Block.Type.LAMBDA) {
             arity().checkArity(context.runtime, args);

@@ -138,7 +138,12 @@ public class CompiledBlock extends ContextAwareBlockBody {
             post(context, binding, oldVis, lastFrame);
         }
     }
-    
+
+    @Override
+    public IRubyObject yield19(ThreadContext context, IRubyObject[] args, IRubyObject self, RubyModule klass, Binding binding, Block.Type type, Block block) {
+        throw context.runtime.newRuntimeError("BUG: yield19 called on 1.8 mode " + getClass().getName());
+    }
+
     private IRubyObject prepareSelf(Binding binding) {
         IRubyObject self = binding.getSelf();
         binding.getFrame().setSelf(self);

@@ -146,6 +146,10 @@ public final class Block {
         return body.yield(context, value, self, klass, true, binding, type);
     }
 
+    public IRubyObject yield19(ThreadContext context, IRubyObject[] args, IRubyObject self, RubyModule klass) {
+        return body.yield19(context, args, self, klass, binding, type, Block.NULL_BLOCK);
+    }
+
     @Deprecated
     public IRubyObject yield(ThreadContext context, IRubyObject value, boolean aValue) {
         return body.yield(context, value, null, null, aValue, binding, type);

@@ -79,8 +79,14 @@ public abstract class JavaInternalBlockBody extends BlockBody {
     public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self, RubyModule klass, boolean aValue, Binding binding, Type type) {
         threadCheck(context);
         
-        
         return yield(context, value);
+    }
+
+    @Override
+    public IRubyObject yield19(ThreadContext context, IRubyObject[] args, IRubyObject self, RubyModule klass, Binding binding, Type type, Block block) {
+        threadCheck(context);
+
+        return yield(context, context.runtime.newArray(args));
     }
     
     public abstract IRubyObject yield(ThreadContext context, IRubyObject value);
