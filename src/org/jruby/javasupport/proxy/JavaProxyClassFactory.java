@@ -53,6 +53,10 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
+import com.headius.android.dex.DexClient;
+
+import dalvik.system.DexClassLoader;
+
 public class JavaProxyClassFactory {
 
     private static final Type JAVA_LANG_CLASS_TYPE = Type.getType(Class.class);
@@ -264,10 +268,25 @@ public class JavaProxyClassFactory {
             e.printStackTrace();
             return null;
         } catch (InvocationTargetException e) {
-            // TODO Auto-generated catch block
+            System.out.println("Exception loading class: " + e);
+            System.out.println("Cause: " + e.getCause());
+            System.out.println("ClassLoader: " + loader);
+            System.out.println("className: " + className);
+            System.out.println("data: " + data);
             e.printStackTrace();
+            if (e.getCause() instanceof java.lang.UnsupportedOperationException
+                    && !(loader instanceof DexClassLoader)
+                    && !(loader instanceof dalvik.system.PathClassLoader)) {
+                System.out.println("Retrying with the Dalvik classloader.");
+                byte[] dalvikByteCode = convertJvmByteCodeToDalvik(className, data);
+                return invokeDefineClass(DexClassLoader.getSystemClassLoader(), className, dalvikByteCode);
+            }
             return null;
         }
+    }
+
+    private static byte[] convertJvmByteCodeToDalvik(String className, byte[] byteCode) {
+        return new DexClient().classesToDex(new String[]{className.replace('.', '/') + ".class"}, new byte[][]{byteCode});
     }
 
     private static ClassWriter beginProxyClass(final String targetClassName,
