@@ -275,6 +275,7 @@ public class JavaProxyClassFactory {
             System.out.println("ClassLoader: " + loader);
             System.out.println("className: " + className);
             System.out.println("data: " + data);
+            System.out.println("cachePath: " + cachePath);
             if (cachePath != null) {
                 System.out.println("Load class with the Dalvik classloader.");
                 byte[] dalvikByteCode = convertJvmByteCodeToDalvik(className, data);
@@ -423,7 +424,7 @@ public class JavaProxyClassFactory {
 
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 
-        int access = Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL | Opcodes.ACC_STATIC;
+        int access = Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL;
         String name = toInternalClassName(targetClassName);
         String signature = null;
         String supername = toInternalClassName(superClass);
