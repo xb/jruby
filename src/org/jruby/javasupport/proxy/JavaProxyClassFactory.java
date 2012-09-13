@@ -28,7 +28,6 @@
 
 package org.jruby.javasupport.proxy;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -43,7 +42,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -64,13 +62,10 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
-import android.util.Log;
-
 import com.android.dx.Version;
 import com.headius.android.dex.DexClient;
 
 import dalvik.system.DexClassLoader;
-import dalvik.system.DexFile;
 
 public class JavaProxyClassFactory {
 
@@ -270,36 +265,21 @@ public class JavaProxyClassFactory {
 
     private static Class invokeDefineClass(ClassLoader loader,
             String className, byte[] data) {
-        try {
-            String cachePath = System.getProperty("jruby.class.cache.path");
-            System.out.println("ClassLoader: " + loader);
-            System.out.println("className: " + className);
-            System.out.println("data: " + data);
-            System.out.println("cachePath: " + cachePath);
-            if (cachePath != null) {
-                System.out.println("Load class with the Dalvik classloader.");
-                byte[] dalvikByteCode = convertJvmByteCodeToDalvik(className, data);
-                String jarFileName = cachePath + "/" + className.replace('.', '/') + ".jar";
-                createJar(jarFileName, dalvikByteCode);
-                try {
-                    DexFile dx = DexFile.loadDex(jarFileName,
-                            File.createTempFile("opt", "dex", new File(cachePath)).getPath(), 0);
-                    for (Enumeration<String> classNames = dx.entries(); classNames
-                            .hasMoreElements();) {
-                        System.out.println("class: " + classNames.nextElement());
-                    }
-                } catch (IOException e) {
-                    Log.w("JRUBY", "Error opening " + jarFileName, e);
-                }
-                try {
-                    // return new PathClassLoader(jarFileName, loader).loadClass(className);
-                    return new DexClassLoader(jarFileName, cachePath, null, loader).loadClass(className);                    
-                } catch (ClassNotFoundException e1) {
-                    System.out.println("Exception loading class with DexClassLoader: " + e1);
-                    e1.printStackTrace();
-                }
-                // return invokeDefineClass(DexClassLoader.getSystemClassLoader(), className, dalvikByteCode);
+        String cachePath = System.getProperty("jruby.class.cache.path");
+        if (cachePath != null) {
+            byte[] dalvikByteCode = new DexClient().classesToDex(
+                    new String[] { className.replace('.', '/') + ".class" }, new byte[][] { data });
+            String jarFileName = cachePath + "/" + className.replace('.', '/') + ".jar";
+            createJar(jarFileName, dalvikByteCode);
+            try {
+                return new DexClassLoader(jarFileName, cachePath, null, loader)
+                        .loadClass(className);
+            } catch (ClassNotFoundException e1) {
+                System.out.println("Exception loading class with DexClassLoader: " + e1);
+                e1.printStackTrace();
             }
+        }
+        try {
             return (Class) defineClass_method
                     .invoke(loader, new Object[] { className, data,
                             Integer.valueOf(0), Integer.valueOf(data.length), JavaProxyClassFactory.class.getProtectionDomain() });
@@ -312,16 +292,14 @@ public class JavaProxyClassFactory {
             e.printStackTrace();
             return null;
         } catch (InvocationTargetException e) {
-            System.out.println("Exception loading class: " + e);
-            System.out.println("Cause: " + e.getCause());
+            // TODO Auto-generated catch block
             e.printStackTrace();
             return null;
         }
     }
 
-    private static byte[] convertJvmByteCodeToDalvik(String className, byte[] byteCode) {
-        return new DexClient().classesToDex(new String[]{className.replace('.', '/') + ".class"}, new byte[][]{byteCode});
-    }
+    private static final String DEX_IN_JAR_NAME = "classes.dex";
+    private static final Attributes.Name CREATED_BY = new Attributes.Name("Created-By");
 
     public static boolean createJar(String fileName, byte[] dexArray) {
         File parentFile = new File(fileName).getParentFile();
@@ -329,15 +307,11 @@ public class JavaProxyClassFactory {
             System.out.println("Creating directory: " + parentFile);
             parentFile.mkdirs();
         }
-        /*
-         * Make or modify the manifest (as appropriate), put the dex
-         * array into the resources map, and then process the entire
-         * resources map in a uniform manner.
-         */
         try {
-            outputResources = new TreeMap<String, byte[]>();
+            TreeMap<String, byte[]> outputResources = new TreeMap<String, byte[]>();
             Manifest manifest = makeManifest();
-            OutputStream out = openOutput(fileName);
+            OutputStream out = (fileName.equals("-") || fileName.startsWith("-.")) ? System.out
+                    : new FileOutputStream(fileName);
             JarOutputStream jarOut = new JarOutputStream(out, manifest);
             outputResources.put(DEX_IN_JAR_NAME, dexArray);
             try {
@@ -353,7 +327,12 @@ public class JavaProxyClassFactory {
             } finally {
                 jarOut.finish();
                 jarOut.flush();
-                closeOutput(out);
+                if (out != null) {
+                    out.flush();
+                    if (out != System.out) {
+                        out.close();
+                    }
+                }
                 jarOut.close();
             }
         } catch (Exception ex) {
@@ -365,60 +344,15 @@ public class JavaProxyClassFactory {
         return true;
     }
     
-    private static TreeMap<String, byte[]> outputResources;
-    private static final String DEX_IN_JAR_NAME = "classes.dex";
-    private static final String MANIFEST_NAME = "META-INF/MANIFEST.MF";
-    private static final Attributes.Name CREATED_BY = new Attributes.Name("Created-By");
-
     private static Manifest makeManifest() throws IOException {
-        byte[] manifestBytes = outputResources.get(MANIFEST_NAME);
-        Manifest manifest;
-        Attributes attribs;
-
-        if (manifestBytes == null) {
-            // We need to construct an entirely new manifest.
-            manifest = new Manifest();
-            attribs = manifest.getMainAttributes();
-            attribs.put(Attributes.Name.MANIFEST_VERSION, "1.0");
-        } else {
-            manifest = new Manifest(new ByteArrayInputStream(manifestBytes));
-            attribs = manifest.getMainAttributes();
-            outputResources.remove(MANIFEST_NAME);
-        }
-
-        String createdBy = attribs.getValue(CREATED_BY);
-        if (createdBy == null) {
-            createdBy = "";
-        } else {
-            createdBy += " + ";
-        }
-        createdBy += "dx " + Version.VERSION;
-
-        attribs.put(CREATED_BY, createdBy);
+        Manifest manifest = new Manifest();
+        Attributes attribs = manifest.getMainAttributes();
+        attribs.put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        attribs.put(CREATED_BY, "dx " + Version.VERSION);
         attribs.putValue("Dex-Location", DEX_IN_JAR_NAME);
-
         return manifest;
     }
     
-    private static OutputStream openOutput(String name) throws IOException {
-        if (name.equals("-") || name.startsWith("-.")) {
-            return System.out;
-        }
-        return new FileOutputStream(name);
-    }
-    
-    private static void closeOutput(OutputStream stream) throws IOException {
-        if (stream == null) {
-            return;
-        }
-
-        stream.flush();
-
-        if (stream != System.out) {
-            stream.close();
-        }
-    }
-
     private static ClassWriter beginProxyClass(final String targetClassName,
             final Class superClass, final Class[] interfaces) {
 
