@@ -158,10 +158,12 @@ public class RubyDir extends RubyObject {
     }
 
     private static IRubyObject asRubyStringList(Ruby runtime, List<ByteList> dirs) {
+        ThreadContext context = runtime.getCurrentContext();
         List<RubyString> allFiles = new ArrayList<RubyString>();
 
         for (ByteList dir : dirs) {
-            allFiles.add(RubyString.newString(runtime, dir));
+            allFiles.add((RubyString) RubyString.newString(runtime, dir).
+                    force_encoding(context, context.runtime.getEncodingService().getDefaultExternal()));
         }
 
         IRubyObject[] tempFileList = new IRubyObject[allFiles.size()];
@@ -200,7 +202,8 @@ public class RubyDir extends RubyObject {
                         String entry = entries.nextElement().getName();
                         String chomped_entry = entry.endsWith("/") ? entry.substring(0, entry.length() - 1) : entry;
                         if (filePattern.matcher(chomped_entry).find()) {
-                            allFiles.add(RubyString.newString(runtime, jarUri + chomped_entry.toString()));
+                            allFiles.add((RubyString) RubyString.newString(runtime, jarUri + chomped_entry.toString()).
+                                    force_encoding(context, context.runtime.getEncodingService().getDefaultExternal()));
                         }
                     }
                     IRubyObject[] tempFileList = new IRubyObject[allFiles.size()];
@@ -324,7 +327,8 @@ public class RubyDir extends RubyObject {
 
         if (block.isGiven()) {
             for (int i = 0; i < dirs.size(); i++) {
-                block.yield(context, RubyString.newString(runtime, dirs.get(i)));
+                block.yield(context, (RubyString) RubyString.newString(runtime, dirs.get(i)).
+                        force_encoding(context, context.runtime.getEncodingService().getDefaultExternal()));
             }
 
             return runtime.getNil();
@@ -811,9 +815,10 @@ public class RubyDir extends RubyObject {
     protected static List<RubyString> getContents(File directory, Ruby runtime) {
         List<RubyString> result = new ArrayList<RubyString>();
         String[] contents = directory.list();
+        ThreadContext context = runtime.getCurrentContext();
 
         for (int i = 0; i < contents.length; i++) {
-            result.add(runtime.newString(contents[i]));
+            result.add((RubyString) runtime.newString(contents[i]));
         }
         return result;
     }
@@ -855,7 +860,8 @@ public class RubyDir extends RubyObject {
             for (int i = 0; i < rowCount; i++) {
                 String[] fields = rows[i].split(":");
                 if (fields[0].equals(user)) {
-                    return runtime.newString(fields[5]);
+                    return runtime.newString(fields[5]).
+                            force_encoding(context, context.runtime.getEncodingService().getDefaultExternal());
                 }
             }
         }
