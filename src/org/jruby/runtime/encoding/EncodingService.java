@@ -266,7 +266,7 @@ public final class EncodingService {
     public IRubyObject getDefaultExternal() {
         IRubyObject defaultExternal = convertEncodingToRubyEncoding(runtime.getDefaultExternalEncoding());
 
-        if (defaultExternal.isNil()) {
+        if (defaultExternal != null && defaultExternal.isNil()) {
             // TODO: MRI seems to default blindly to US-ASCII and we were using Charset default from Java...which is right?
             ByteList encodingName = ByteList.create("US-ASCII");
             Encoding encoding = runtime.getEncodingService().loadEncoding(encodingName);
