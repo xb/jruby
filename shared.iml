@@ -333,7 +333,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/build_lib/nailgun-0.7.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/build_lib/nailgun-server-0.9.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

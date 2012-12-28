@@ -386,7 +386,7 @@
           snakeyaml-1.11.jar
           yecht.jar
           yydebug.jar
-          nailgun-0.7.1.jar
+          nailgun-server-0.9.1.jar
           jzlib-1.1.0.jar
           invokebinder.jar"/>
 
@@ -445,7 +445,7 @@ other than ASM, which is rewritten to avoid conflicts. -->
             <zipfileset src="${build.lib.dir}/${asm.commons.jar}"/>
             <zipfileset src="${build.lib.dir}/${asm.analysis.jar}"/>
             <zipfileset src="${build.lib.dir}/yecht.jar"/>
-            <zipfileset src="${build.lib.dir}/nailgun-0.7.1.jar"/>
+            <zipfileset src="${build.lib.dir}/nailgun-server-0.9.1.jar"/>
             <zipfileset src="${build.lib.dir}/invokebinder.jar"/>
             <zipfileset src="${build.lib.dir}/yydebug.jar"/>
             <metainf dir="spi">
