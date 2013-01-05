@@ -67,6 +67,7 @@ public class Options {
         boolean isHotspot =
                 vmName.contains("hotspot") ||
                         vmName.toLowerCase().contains("openjdk");
+        boolean isJ9 = vmName.contains("J9");
 
         String vmVersionString = SafePropertyAccessor.getProperty("java.vm.version", "");
         String javaVersion = SafePropertyAccessor.getProperty("java.specification.version", "");
@@ -86,6 +87,9 @@ public class Options {
                 // Hotspot >= 24 will has the new working indy logic, so we enable by default
                 INVOKEDYNAMIC_DEFAULT = true;
             }
+        } else if (isJ9) {
+            // https://github.com/jruby/jruby/issues/477 indicates that J9's Indy support may be lacking
+            INVOKEDYNAMIC_DEFAULT = false;
         } else if (new BigDecimal(javaVersion).compareTo(new BigDecimal("1.7")) >= 0){
             // if not on HotSpot, on if specification version supports indy
             INVOKEDYNAMIC_DEFAULT = true;
