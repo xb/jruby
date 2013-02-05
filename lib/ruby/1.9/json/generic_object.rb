@@ -10,6 +10,21 @@ module JSON
         data.delete JSON.create_id
         self[data]
       end
+
+      def from_hash(object)
+        case
+        when object.respond_to?(:to_hash)
+          result = new
+          object.to_hash.each do |key, value|
+            result[key] = from_hash(value)
+          end
+          result
+        when object.respond_to?(:to_ary)
+          object.to_ary.map { |a| from_hash(a) }
+        else
+          object
+        end
+      end
     end
 
     def to_hash
