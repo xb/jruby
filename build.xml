@@ -759,7 +759,7 @@ other than ASM, which is rewritten to avoid conflicts. -->
             <!-- to ignore any gems installed in ~/.gem -->
             <env key="GEM_HOME" value="${basedir}/${jruby.gem.home}"/>
             <!-- to make sure we are working with JRuby and not RVM's gems -->
-            <arg line="-S gem install -n ${basedir}/bin ${dev.gems}"/>
+            <arg line="-S gem install --force -n ${basedir}/bin ${dev.gems}"/>
         </java>
     </target>
 
