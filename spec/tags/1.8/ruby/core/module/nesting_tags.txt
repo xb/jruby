@@ -1,0 +1,1 @@
+fails:Module::Nesting returns the nesting for module/class declaring the called method
