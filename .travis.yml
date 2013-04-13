@@ -15,11 +15,18 @@ env:
     - TARGET='test-extended'
     - TARGET='spec:ci_interpreted_via_env' RUBYSPEC_LANG_VER='1.8'
     - TARGET='spec:ci_interpreted_via_env' RUBYSPEC_LANG_VER='1.9'
+    - TARGET='jar-complete'
+    - TARGET='dist'
 
 matrix:
   allow_failures:
     - env: TARGET='spec:ci_interpreted_via_env' RUBYSPEC_LANG_VER='1.8'
     - env: TARGET='spec:ci_interpreted_via_env' RUBYSPEC_LANG_VER='1.9'
+  exclude:
+    - jdk: openjdk6
+      env: TARGET='jar-complete'
+    - jdk: openjdk6
+      env: TARGET='dist'
 
 script: "ant $TARGET"
 install: /bin/true
