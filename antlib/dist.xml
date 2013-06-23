@@ -64,7 +64,6 @@
         <patternset refid="dist.files"/>
         <exclude name="share/**"/>
         <include name="bench/**"/>
-        <include name="cext/**"/>
         <include name="src/**"/>
         <include name="test/**"/>
         <exclude name="test/testapp/testapp"/>
@@ -112,15 +111,7 @@
         <include name="tool/nailgun/src/**"/>
     </patternset>
 
-    <patternset id="dist.jruby-cext-native.files">
-        <include name="**/libjruby-cext.so"/>
-        <include name="**/libjruby-cext.a"/>
-        <include name="**/libjruby-cext.jnilib"/>
-        <include name="**/jruby-cext.dll"/>
-        <include name="**/native/include/**"/>
-    </patternset>
-
-    <target name="dist-bin" depends="install-dev-gems,build-jruby-cext-native">
+    <target name="dist-bin" depends="install-dev-gems">
         <mkdir dir="${dist.stage.bin.dir}"/>
         <copy todir="${dist.stage.bin.dir}">
             <fileset dir="${basedir}">
@@ -134,11 +125,9 @@
         <mkdir dir="${dist.stage.bin.dir}/lib/native"/>
         <copy todir="${dist.stage.bin.dir}">
             <fileset dir="${basedir}">
-                <!-- So repeated ant dists won't include extra cext copies -->
                 <exclude name="dist/**"/>
                 <exclude name="build/**"/>
                 <exclude name="gems/jruby-jars/**"/>
-                <patternset refid="dist.jruby-cext-native.files"/>
             </fileset>
         </copy>
         <unzip-native-libs destination.dir="${dist.stage.bin.dir}/lib/native"/>

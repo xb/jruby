@@ -38,6 +38,8 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URI;
@@ -215,6 +217,17 @@ public class LoadService {
     protected final Map<String, JarFile> jarFiles = new HashMap<String, JarFile>();
 
     protected final Ruby runtime;
+    
+    private static final Constructor<Library> CEXTENSION_CONSTRUCTOR;
+    static {
+        Constructor cextension = null;
+        try {
+            cextension = Class.forName("org.jruby.cext.CExtensionLibrary").getConstructor(LoadServiceResource.class);
+        } catch (Exception e) {
+            // leave null
+        }
+        CEXTENSION_CONSTRUCTOR = cextension;
+    }
 
     public LoadService(Ruby runtime) {
         this.runtime = runtime;
@@ -1094,11 +1107,17 @@ public class LoadService {
         }
         String file = state.loadName;
         if (file.endsWith(".so") || file.endsWith(".dll") || file.endsWith(".bundle")) {
-            if (runtime.getInstanceConfig().isCextEnabled()) {
-                return new CExtension(resource);
-            } else {
-                throw runtime.newLoadError("C extensions are disabled, can't load `" + resource.getName() + "'", resource.getName());
+            if (runtime.getInstanceConfig().isCextEnabled() && CEXTENSION_CONSTRUCTOR != null) {
+                try {
+                    return CEXTENSION_CONSTRUCTOR.newInstance(resource);
+                } catch (IllegalAccessException e) {
+                } catch (IllegalArgumentException e) {
+                } catch (InstantiationException e) {
+                } catch (InvocationTargetException e) {
+                }
             }
+            
+            throw runtime.newLoadError("C extensions are disabled, can't load `" + resource.getName() + "'", resource.getName());
         } else if (file.endsWith(".jar")) {
             return new JarredScript(resource);
         } else if (file.endsWith(".class")) {
