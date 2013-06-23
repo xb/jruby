@@ -217,17 +217,6 @@ public class LoadService {
     protected final Map<String, JarFile> jarFiles = new HashMap<String, JarFile>();
 
     protected final Ruby runtime;
-    
-    private static final Constructor<Library> CEXTENSION_CONSTRUCTOR;
-    static {
-        Constructor cextension = null;
-        try {
-            cextension = Class.forName("org.jruby.cext.CExtensionLibrary").getConstructor(LoadServiceResource.class);
-        } catch (Exception e) {
-            // leave null
-        }
-        CEXTENSION_CONSTRUCTOR = cextension;
-    }
 
     public LoadService(Ruby runtime) {
         this.runtime = runtime;
@@ -1107,13 +1096,21 @@ public class LoadService {
         }
         String file = state.loadName;
         if (file.endsWith(".so") || file.endsWith(".dll") || file.endsWith(".bundle")) {
-            if (runtime.getInstanceConfig().isCextEnabled() && CEXTENSION_CONSTRUCTOR != null) {
+            if (runtime.getInstanceConfig().isCextEnabled()) {
+                // attempt to construct CExtensionLibrary for C exts
                 try {
-                    return CEXTENSION_CONSTRUCTOR.newInstance(resource);
+                    return (Library)runtime
+                            .getJRubyClassLoader()
+                            .loadClass("org.jruby.cext.CExtensionLibrary")
+                            .getConstructor(LoadServiceResource.class)
+                            .newInstance(resource);
                 } catch (IllegalAccessException e) {
                 } catch (IllegalArgumentException e) {
                 } catch (InstantiationException e) {
                 } catch (InvocationTargetException e) {
+                } catch (ClassNotFoundException e) {
+                } catch (NoSuchMethodException e) {
+                } catch (SecurityException e) {
                 }
             }
             
