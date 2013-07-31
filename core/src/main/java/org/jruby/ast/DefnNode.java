@@ -37,6 +37,8 @@ import java.util.List;
 import org.jruby.MetaClass;
 import org.jruby.Ruby;
 import org.jruby.RubyModule;
+import org.jruby.ast.truffle.TruffleDynamicMethod;
+import org.jruby.ast.truffle.TruffleNodeVisitor;
 import org.jruby.ast.types.INameNode;
 import org.jruby.ast.visitor.NodeVisitor;
 import org.jruby.common.IRubyWarnings.ID;
@@ -54,9 +56,18 @@ import org.jruby.runtime.builtin.IRubyObject;
  * method definition node.
  */
 public class DefnNode extends MethodDefNode implements INameNode {
+    public org.jruby.ast.truffle.Defn truffleDefn;
+    
     public DefnNode(ISourcePosition position, ArgumentNode nameNode, ArgsNode argsNode, 
             StaticScope scope, Node bodyNode) {
         super(position, nameNode, argsNode, scope, bodyNode);
+        
+        try {
+            truffleDefn = (org.jruby.ast.truffle.Defn)accept(new TruffleNodeVisitor());
+            System.out.println("compiled to truffle: " + nameNode.getName());
+        } catch (Throwable t) {
+//            System.out.println(t.getLocalizedMessage());
+        }
     }
 
     public NodeType getNodeType() {
@@ -100,6 +111,12 @@ public class DefnNode extends MethodDefNode implements INameNode {
         Visibility visibility = context.getCurrentVisibility();
         if (name == "initialize" || name == "initialize_copy" || visibility == Visibility.MODULE_FUNCTION) {
             visibility = Visibility.PRIVATE;
+        }
+        
+        if (truffleDefn != null) {
+            DynamicMethod newMethod = new TruffleDynamicMethod(truffleDefn);
+            containingClass.addMethod(name, newMethod);
+            return context.nil;
         }
         
         scope.determineModule();

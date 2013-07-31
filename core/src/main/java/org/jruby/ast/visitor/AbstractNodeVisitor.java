@@ -145,7 +145,7 @@ public class AbstractNodeVisitor implements NodeVisitor {
         return foundVariables;
     }
     
-    private Object defaultVisit(Node iVisited) {
+    public Object defaultVisit(Node iVisited) {
         for (Node node : iVisited.childNodes()) node.accept(this);
         return null;
     }
