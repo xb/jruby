@@ -61,11 +61,11 @@ public class RubyPathname extends RubyObject {
 
         runtime.getKernel().defineAnnotatedMethods(PathnameKernelMethods.class);
 
-        defineDelegateMethods(cPathname, runtime.getFile(), "realpath", "realdirpath", "atime",
+        defineDelegateMethods(cPathname, runtime.getFile(), "atime",
                 "ctime", "mtime", "ftype", "rename", "stat", "lstat", "truncate", "extname", "open");
         defineDelegateMethodsAppendPath(cPathname, runtime.getFile(), "chmod", "lchmod", "chown",
                 "lchown", "utime");
-        defineDelegateMethodsSinglePath(cPathname, runtime.getFile(), "basename", "dirname",
+        defineDelegateMethodsSinglePath(cPathname, runtime.getFile(), "realpath", "realdirpath", "basename", "dirname",
                 "expand_path", "readlink");
         defineDelegateMethodsArrayOfPaths(cPathname, runtime.getFile(), "split");
 
