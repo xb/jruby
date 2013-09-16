@@ -59,6 +59,8 @@ import static org.jruby.runtime.invokedynamic.MethodNames.OP_EQUAL;
  *
  */
 public class Helpers {
+    static String METHOD_DESCRIPTOR_DELIMITER = "\f";
+
     public static CallSite selectAttrAsgnCallSite(IRubyObject receiver, IRubyObject self, CallSite normalSite, CallSite variableSite) {
         if (receiver == self) return variableSite;
         return normalSite;
@@ -174,7 +176,7 @@ public class Helpers {
             String parameterList,
             ASTInspector inspector) {
         return buildBlockDescriptor(closureMethod, arity, file, line, hasMultipleArgsHead, argsNodeId, inspector) +
-                "," + parameterList;
+                METHOD_DESCRIPTOR_DELIMITER + parameterList;
     }
 
     public static String buildBlockDescriptor(
@@ -188,19 +190,19 @@ public class Helpers {
 
         // build descriptor string
         String descriptor =
-                closureMethod + ',' +
-                arity + ',' +
-                hasMultipleArgsHead + ',' +
-                BlockBody.asArgumentType(argsNodeId) + ',' +
-                file + ',' +
-                line + ',' +
+                closureMethod + METHOD_DESCRIPTOR_DELIMITER +
+                arity + METHOD_DESCRIPTOR_DELIMITER +
+                hasMultipleArgsHead + METHOD_DESCRIPTOR_DELIMITER +
+                BlockBody.asArgumentType(argsNodeId) + METHOD_DESCRIPTOR_DELIMITER  +
+                file + METHOD_DESCRIPTOR_DELIMITER  +
+                line + METHOD_DESCRIPTOR_DELIMITER  +
                 !(inspector.hasClosure() || inspector.hasScopeAwareMethods());
 
         return descriptor;
     }
     
     public static String[] parseBlockDescriptor(String descriptor) {
-        return descriptor.split(",");
+        return descriptor.split(METHOD_DESCRIPTOR_DELIMITER);
     }
 
     public static BlockBody createCompiledBlockBody(ThreadContext context, Object scriptObject, StaticScope scope, String descriptor) {
@@ -2055,7 +2057,7 @@ public class Helpers {
     public static String encodeScope(StaticScope scope) {
         StringBuilder namesBuilder = new StringBuilder(scope.getType().name());
 
-        namesBuilder.append(',');
+        namesBuilder.append(METHOD_DESCRIPTOR_DELIMITER);
 
         boolean first = true;
         for (String name : scope.getVariables()) {
@@ -2064,11 +2066,11 @@ public class Helpers {
             namesBuilder.append(name);
         }
         namesBuilder
-                .append(',')
+                .append(METHOD_DESCRIPTOR_DELIMITER)
                 .append(scope.getRequiredArgs())
-                .append(',')
+                .append(METHOD_DESCRIPTOR_DELIMITER)
                 .append(scope.getOptionalArgs())
-                .append(',')
+                .append(METHOD_DESCRIPTOR_DELIMITER)
                 .append(scope.getRestArg());
 
         return namesBuilder.toString();
@@ -2113,7 +2115,7 @@ public class Helpers {
     }
 
     private static String[][] decodeScopeDescriptor(String scopeString) {
-        String[] scopeElements = scopeString.split(",");
+        String[] scopeElements = scopeString.split(METHOD_DESCRIPTOR_DELIMITER);
         String[] scopeNames = scopeElements[1].length() == 0 ? new String[0] : getScopeNames(scopeElements[1]);
         return new String[][] {scopeElements, scopeNames};
     }
